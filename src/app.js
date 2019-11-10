@@ -24,12 +24,7 @@ app.use(
 // APP LOGIC
 // ------------------------------------------------------------------
 
-function getRandomInt(max) {
-    let  min = 0;
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
-}
+
 
 let question_number = 0;
 
@@ -44,8 +39,13 @@ const question = function (question, answer) {
 };
 
 const macros = [
-    question("What is it macro? 1. Job, 2. Water, 3. laptop", 2),
-    question("question 2 macro?", 3)
+    question("If real interest rate in America drops lower than real interest rate in Europe, what happens to the supply of loanable funds in America? 1. decreases, 2. increases, 3. stays the same", 1),
+    question("What is no unemployment? 1. No frictional unemployment, 2. No cyclical unemployment, 3. No structural unemployment", 2),
+    question("What does a private open economy not include? 1. consumption, 2. government spending, 3. net exports", 2),
+    question("Which of the following is not a shortcoming of GDP? 1. It doesn't account for substitution of consumer goods, 2. It doesn't measure the value of leisure, 3. It doesn't account for the increase of quality of the products over time", 1),
+    question("A barter government is different from a money economy in that a barter economy? 1. Has only a few assets that act as a medium of exchange, 2. Eliminates the need for a double coincidence of wants, 3. Involves higher cost for each transcription", 3),
+    question("Which of the following is not a determinant of a country's productivity? 1. land capital, 2. machines used in production, 3. health", 3),
+    question("What is a way to expand the production possibilities frontier? 1. Reducing unemployment, 2. improve technology, 3. nIncreasing productivity", 2)
 ];
 
 const micros = [
@@ -64,12 +64,17 @@ const micros = [
 const getANewQuestion = function (macro, alreadyAskedQuestions) {
 
     const questionsList = macro ? macros : micros;
+
+    if(!alreadyAskedQuestions){
+        return questionsList[0]
+    }
+
     let counter = 0;
-    let question = macros[counter];
+    let question = questionsList[counter];
 
     while(alreadyAskedQuestions.includes(question.id) && counter < questionsList.length ){
         counter+=1;
-        question = macros[counter];
+        question = questionsList[counter];
     }
     if(counter>questionsList){
         return;
@@ -83,7 +88,7 @@ const askQuestion = function(jovoInstance, macro, response){
     if (!response)
         response = "";
 
-    const question = getANewQuestion(true);
+    const question = getANewQuestion(macro, jovoInstance.$session.$data.questionsAskedList);
     if(!question){
         return jovoInstance.ask("You are done with the questions. Do you want to try something else?");
     }
@@ -114,7 +119,7 @@ const checkAnswer = function (jovoInstance, answer) {
     const type = jovoInstance.$session.$data.type;
     const macro = type === "Macro";
     console.log(`Correct answer: ${correctAnswer}, Aprovided answer: ${answer}`)
-    const response = correctAnswer === answer ? 'Good Job! Now next question. ' : 'You got it wrong!';
+    const response = correctAnswer === answer ? 'Good Job! Now next question. ' : 'You got it wrong! The right answer was '+correctAnswer +" .";
 
     return askQuestion(jovoInstance, macro, response);
 
