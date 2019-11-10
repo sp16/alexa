@@ -124,6 +124,8 @@ const askQuestion = function(jovoInstance, subject, response) {
 
     jovoInstance.$session.$data.type = subject;
     jovoInstance.$session.$data.answer = question.answer;
+    jovoInstance.$googleAction.showSuggestionChips(['1', '2', '3']);
+
     return jovoInstance.ask(response + question.question);
 
 };
