@@ -61,67 +61,81 @@ const micros = [
     question("What is satisfaction measured in? 1. utilities 2. happys 3. utils", 3)
 ];
 
-const getANewQuestion = function (macro, alreadyAskedQuestions) {
+const biology = [
+    question("Which is not part of cellular respiration? 1. Citric acid cycle 2. Krebs Cycle 3. Calvin Cycle", 3),
+    question("What is not true about water? 1. hydrogen bonds 2. low specific heat 3. cohesion", 2),
+    question("What type of speciation involves a geographic barrier? 1. allopatric 2. sympatric", 1),
+    question("Which is not an autotroph? 1. kelp 2. grasshopper 3. mushroom", 2),
+    question("What system controls hormones? 1. lymphatic 2. endocrine 3. integumentary", 2),
+    question("Which nucleic acid is not in RNA? 1. thymine 2. uracil 3. adenine", 1),
+    question("What are the DNA strands of the lagging strand called? 1. mRNA 2. DNA Polymerase 3. Okazaki Fragments", 3),
+    question("What plant did Gregor Mendel primarily work with? 1. Arabidopsis Thaliana 2. pea plants 3. Wheat", 2),
+    question("Who coined the term 'survival of the fittest'? 1. Watson and Crick 2. Charles Darwin 3. Hershey and Chase", 2),
+    question("What model does replication follow? 1. conservative 2. dispersive 3. semiconservative", 3)
+];
 
-    const questionsList = macro ? macros : micros;
+const getANewQuestion = function (subject, alreadyAskedQuestions) {
 
-    if(!alreadyAskedQuestions){
-        return questionsList[0]
+    let questionsList;
+
+    switch (subject) {
+
+        case "Macro": questionsList = macros; break;
+        case "Micro": questionsList = micros; break;
+        case "Biology": questionsList = biology; break;
     }
 
     let counter = 0;
+    if (!alreadyAskedQuestions) {
+        return questionsList[counter]
+    }
+
     let question = questionsList[counter];
 
-    while(alreadyAskedQuestions.includes(question.id) && counter < questionsList.length ){
-        counter+=1;
+    while (counter < questionsList.length && alreadyAskedQuestions.includes(question.id)){
+        counter += 1;
         question = questionsList[counter];
     }
-    if(counter>questionsList){
+
+    if (counter > questionsList) {
         return;
     }
 
     return question;
+
 };
 
-const askQuestion = function(jovoInstance, macro, response){
-    //macro is a boolean
+const askQuestion = function(jovoInstance, subject, response) {
+
     if (!response)
         response = "";
 
-    const question = getANewQuestion(macro, jovoInstance.$session.$data.questionsAskedList);
-    if(!question){
+    const question = getANewQuestion(subject, jovoInstance.$session.$data.questionsAskedList);
+
+    if (!question) {
         return jovoInstance.ask("You are done with the questions. Do you want to try something else?");
     }
 
-    if(!jovoInstance.$session.$data.questionsAskedList){
+    if (!jovoInstance.$session.$data.questionsAskedList) {
         jovoInstance.$session.$data.questionsAskedList = [question.id]
-    }
-    else{
+    } else {
         jovoInstance.$session.$data.questionsAskedList.push(question.id)
     }
 
-    if (macro){
-
-        jovoInstance.$session.$data.type = "Macro";
-        jovoInstance.$session.$data.answer = question.answer;
-
-        return jovoInstance.ask(response + question.question);
-    }
-
-    jovoInstance.$session.$data.type = "Micro";
+    jovoInstance.$session.$data.type = subject;
     jovoInstance.$session.$data.answer = question.answer;
-
     return jovoInstance.ask(response + question.question);
+
 };
 
 const checkAnswer = function (jovoInstance, answer) {
     const correctAnswer = jovoInstance.$session.$data.answer;
     const type = jovoInstance.$session.$data.type;
-    const macro = type === "Macro";
-    console.log(`Correct answer: ${correctAnswer}, Aprovided answer: ${answer}`)
-    const response = correctAnswer === answer ? 'Good Job! Now next question. ' : 'You got it wrong! The right answer was '+correctAnswer +" .";
 
-    return askQuestion(jovoInstance, macro, response);
+    console.log(`Correct answer: ${correctAnswer}, Aprovided answer: ${answer}`);
+    const response = correctAnswer === answer ? 'Good Job! Now next question. ' : 'You got it wrong! The right answer was the option '+correctAnswer +" .";
+
+    return askQuestion(jovoInstance, type, response);
 
 };
 
@@ -132,13 +146,16 @@ app.setHandler({
 //this.tell is the last line
     MacroIntent() {
 
-        return askQuestion(this, true);
+        return askQuestion(this, "Macro");
     },
     MicroIntent() {
 
-        return askQuestion(this, false);
+        return askQuestion(this, "Micro");
     },
-
+    BiologyIntent() {
+        console.log("hello");
+        return askQuestion(this, "Biology");
+    },
     OptionOneIntent(){
         return checkAnswer(this, 1);
     },
